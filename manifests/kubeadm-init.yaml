@@ -1,0 +1,23 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 192.168.56.110
+  bindPort: 6443
+nodeRegistration:
+  name: k8s-master
+  criSocket: unix:///run/containerd/containerd.sock
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+# Ajustar esta versión a la que muestre: kubeadm version
+kubernetesVersion: v1.34.12
+controlPlaneEndpoint: "192.168.56.110:6443"
+networking:
+  dnsDomain: cluster.local
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+apiServer:
+  certSANs:
+    - "192.168.56.110"
+    - "k8s-master"
+    - "k8s-master.lab.local"

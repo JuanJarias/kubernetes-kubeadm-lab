@@ -22,3 +22,13 @@ id_rsa.pub
 
 # Variables locales
 scripts/variables-cluster.sh
+
+# Copias administrativas y configuración temporal de unión
+admin-lab.conf
+super-admin.conf
+kubeadm-join.yaml
+.kube-lab-transfer/
+
+# Credenciales locales de registros
+auth.json
+.docker/

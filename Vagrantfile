@@ -4,19 +4,18 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/rocky9"
   config.ssh.insert_key = false
 
-  bridge_adapter = ENV.fetch("BRIDGE_ADAPTER", "CAMBIAR_POR_ADAPTADOR_FISICO")
+  # Interfaz física del host Fedora utilizada para Bridge.
+  bridge_adapter = "wlo1"
 
   nodes = {
     "k8s-master" => {
       cpus: 2,
       memory: 2048,
-      private_ip: "192.168.56.110",
       mac: "080027560010"
     },
     "k8s-worker" => {
       cpus: 1,
       memory: 2048,
-      private_ip: "192.168.56.120",
       mac: "080027560020"
     }
   }
@@ -25,20 +24,20 @@ Vagrant.configure("2") do |config|
     config.vm.define name do |node|
       node.vm.hostname = "#{name}.lab.local"
 
-      # Adaptador 1: NAT, creado automáticamente por VirtualBox.
-      # Adaptador 2: Bridge, acceso SSH desde la red física.
+      # Adaptador 1: NAT, creado por VirtualBox. Vagrant usa esta NIC para SSH.
+      # Adaptador 2: Bridge, acceso desde la red física.
       node.vm.network "public_network",
                       bridge: bridge_adapter,
                       auto_config: false
 
-      # Adaptador 3: Host-Only adicional para administración desde el host.
+      # Adaptador 3: Host-Only, administración privada desde Fedora.
       node.vm.network "private_network",
                       type: "dhcp",
                       virtualbox__intnet: false,
                       auto_config: false
 
-      # Adaptador 4: red privada del laboratorio, compartida con el bastión.
-      # Se configura por DHCP para demostrar la reserva MAC -> IP.
+      # Adaptador 4: red privada DHCP compartida con dns-dhcp01.
+      # La MAC estable permite que DHCP entregue la dirección reservada.
       node.vm.network "private_network",
                       type: "dhcp",
                       mac: settings[:mac],
@@ -51,7 +50,7 @@ Vagrant.configure("2") do |config|
         vb.customize ["modifyvm", :id, "--ioapic", "on"]
       end
 
-      node.vm.synced_folder ".", "/vagrant", disabled: false
+      node.vm.synced_folder ".", "/vagrant",disabled: true
     end
   end
 end
